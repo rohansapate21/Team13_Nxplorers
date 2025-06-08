@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
@@ -102,6 +103,17 @@ DATABASES = {
     }
 }
 
+# Cache configuration for news API
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 1800,  # 30 minutes
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -155,3 +167,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # If using Vite
     "http://127.0.0.1:5173",
 ]
+
+# API Keys (Move these to environment variables in production)
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyBVVoT0sVmQm0fKK4s_XSTXzy5MwazMlVY')
+NEWS_API_KEY = os.getenv('NEWS_API_KEY', '5447104d9f464b4fae5de0c60b3ee59a')

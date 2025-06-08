@@ -14,20 +14,22 @@ function Logout() {
 function App() {
     return (
         <BrowserRouter>
-            <Routes>
-                <Route
-                    path="/"
-                    element={
-                        <ProtectedRoute>
-                            <Home />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/logout" element={<Logout />} />
-                <Route path="*" element={<NotFound />} />
-            </Routes>
+            <div className="min-h-screen bg-gray-50">
+                <Routes>
+                    <Route
+                        path="/"
+                        element={
+                            <ProtectedRoute>
+                                <Home />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/logout" element={<Logout />} />
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </div>
         </BrowserRouter>
     );
 }

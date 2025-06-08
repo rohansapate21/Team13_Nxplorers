@@ -1,512 +1,285 @@
-import React, { useState, useRef } from 'react';
-import "../styles/home.css"
-import { Upload, FileText, Users, TrendingUp, Briefcase, ExternalLink, Download, CheckCircle, XCircle, AlertCircle, Eye, BarChart3, Clock, MapPin, Building } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import api from "../api";
+import Note from "../components/Note";
+import ResumeHelper from "../components/ResumeHelper";
+import NewsDashboard from "../components/NewsDashboard";
+import '../styles/home.css';
 
-const ResumePortal = () => {
-  const [activeTab, setActiveTab] = useState('checker');
-  const [userType, setUserType] = useState('normal');
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [analysisResults, setAnalysisResults] = useState([]);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const fileInputRef = useRef(null);
+function Home() {
+    const [notes, setNotes] = useState([]);
+    const [content, setContent] = useState("");
+    const [title, setTitle] = useState("");
+    const [activeTab, setActiveTab] = useState("notes");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  // Mock job news data
-  const jobNews = [
-    {
-      title: "Tech Industry Hiring Surge in Q2 2025",
-      summary: "Major tech companies are ramping up recruitment with over 50,000 new positions expected.",
-      source: "TechCrunch",
-      time: "2 hours ago",
-      trend: "up"
-    },
-    {
-      title: "Remote Work Policies Shape New Hiring Trends",
-      summary: "Companies adapting flexible work models are seeing 40% more applications.",
-      source: "Forbes",
-      time: "5 hours ago",
-      trend: "up"
-    },
-    {
-      title: "AI Skills in High Demand Across Industries",
-      summary: "Machine learning and AI expertise now required in 60% of tech job postings.",
-      source: "LinkedIn News",
-      time: "1 day ago",
-      trend: "up"
-    },
-    {
-      title: "Entry-Level Positions See Competitive Market",
-      summary: "Fresh graduates facing increased competition as companies become more selective.",
-      source: "Economic Times",
-      time: "2 days ago",
-      trend: "down"
-    }
-  ];
+    useEffect(() => {
+        if (activeTab === "notes") {
+            getNotes();
+        }
+    }, [activeTab]);
 
-  // Mock job openings data
-  const jobOpenings = [
-    {
-      title: "Senior Frontend Developer",
-      company: "Google",
-      location: "Bangalore, India",
-      type: "Full-time",
-      salary: "₹25-35 LPA",
-      posted: "2 days ago",
-      source: "LinkedIn",
-      skills: ["React", "TypeScript", "Node.js"]
-    },
-    {
-      title: "Data Scientist Intern",
-      company: "Microsoft",
-      location: "Hyderabad, India",
-      type: "Internship",
-      salary: "₹50K/month",
-      posted: "1 day ago",
-      source: "Internshala",
-      skills: ["Python", "ML", "Statistics"]
-    },
-    {
-      title: "Product Manager",
-      company: "Flipkart",
-      location: "Mumbai, India",
-      type: "Full-time",
-      salary: "₹20-28 LPA",
-      posted: "3 days ago",
-      source: "Naukri",
-      skills: ["Strategy", "Analytics", "Leadership"]
-    },
-    {
-      title: "DevOps Engineer",
-      company: "Amazon",
-      location: "Chennai, India",
-      type: "Full-time",
-      salary: "₹18-25 LPA",
-      posted: "4 days ago",
-      source: "Career360",
-      skills: ["AWS", "Docker", "Kubernetes"]
-    },
-    {
-      title: "UI/UX Designer",
-      company: "Zomato",
-      location: "Delhi, India",
-      type: "Full-time",
-      salary: "₹12-18 LPA",
-      posted: "1 week ago",
-      source: "LinkedIn",
-      skills: ["Figma", "Prototyping", "User Research"]
-    },
-    {
-      title: "Backend Developer Intern",
-      company: "Paytm",
-      location: "Noida, India",
-      type: "Internship",
-      salary: "₹35K/month",
-      posted: "5 days ago",
-      source: "Internshala",
-      skills: ["Java", "Spring", "MySQL"]
-    }
-  ];
-
-  // Resume analysis criteria
-  const analysisChecklist = [
-    { id: 'contact', label: 'Contact Information', weight: 10 },
-    { id: 'summary', label: 'Professional Summary', weight: 15 },
-    { id: 'experience', label: 'Work Experience', weight: 25 },
-    { id: 'education', label: 'Education Details', weight: 15 },
-    { id: 'skills', label: 'Technical Skills', weight: 20 },
-    { id: 'formatting', label: 'Formatting & Layout', weight: 10 },
-    { id: 'keywords', label: 'Industry Keywords', weight: 5 }
-  ];
-
-  const handleFileUpload = (event) => {
-    const files = Array.from(event.target.files);
-    setUploadedFiles(files);
-    
-    if (files.length > 0) {
-      analyzeResumes(files);
-    }
-  };
-
-  const analyzeResumes = async (files) => {
-    setIsAnalyzing(true);
-    
-    // Simulate analysis delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const results = files.map((file, index) => {
-      const scores = analysisChecklist.map(item => ({
-        ...item,
-        score: Math.floor(Math.random() * 41) + 60, // Random score between 60-100
-        status: Math.random() > 0.3 ? 'pass' : 'fail'
-      }));
-      
-      const totalScore = scores.reduce((acc, item) => acc + (item.score * item.weight / 100), 0);
-      
-      return {
-        fileName: file.name,
-        fileSize: file.size,
-        totalScore: Math.round(totalScore),
-        scores,
-        suggestions: generateSuggestions(scores)
-      };
-    });
-    
-    setAnalysisResults(results);
-    setIsAnalyzing(false);
-  };
-
-  const generateSuggestions = (scores) => {
-    const suggestions = [];
-    scores.forEach(item => {
-      if (item.score < 75) {
-        suggestions.push(`Improve ${item.label.toLowerCase()}`);
-      }
-    });
-    return suggestions;
-  };
-
-  const generateReport = () => {
-    const reportData = {
-      timestamp: new Date().toISOString(),
-      totalFiles: analysisResults.length,
-      averageScore: Math.round(analysisResults.reduce((acc, result) => acc + result.totalScore, 0) / analysisResults.length),
-      results: analysisResults
+    const getNotes = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await api.get("/api/notes/");
+            setNotes(res.data);
+            console.log("Notes loaded:", res.data);
+        } catch (err) {
+            console.error("Error fetching notes:", err);
+            setError("Failed to load notes. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
-    
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `resume-analysis-report-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
-  const getScoreColor = (score) => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
+    const deleteNote = async (id) => {
+        try {
+            const res = await api.delete(`/api/notes/delete/${id}/`);
+            if (res.status === 204) {
+                alert("Note deleted!");
+                getNotes();
+            } else {
+                alert("Failed to delete note.");
+            }
+        } catch (error) {
+            console.error("Error deleting note:", error);
+            alert("Failed to delete note.");
+        }
+    };
 
-  const getScoreIcon = (score) => {
-    if (score >= 85) return <CheckCircle className="w-5 h-5 text-green-600" />;
-    if (score >= 70) return <AlertCircle className="w-5 h-5 text-yellow-600" />;
-    return <XCircle className="w-5 h-5 text-red-600" />;
-  };
+    const createNote = async (e) => {
+        e.preventDefault();
+        if (!title.trim() || !content.trim()) {
+            alert("Please fill in both title and content.");
+            return;
+        }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <FileText className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Resume Portal</h1>
-            </div>
-            <nav className="flex space-x-6">
-              <button
-                onClick={() => setActiveTab('checker')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === 'checker' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Resume Checker
-              </button>
-              <button
-                onClick={() => setActiveTab('news')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === 'news' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Job News
-              </button>
-              <button
-                onClick={() => setActiveTab('jobs')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === 'jobs' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Job Openings
-              </button>
-            </nav>
-          </div>
-        </div>
-      </header>
+        try {
+            const res = await api.post("/api/notes/", { content, title });
+            if (res.status === 201) {
+                alert("Note created!");
+                setTitle("");
+                setContent("");
+                getNotes();
+            } else {
+                alert("Failed to create note.");
+            }
+        } catch (err) {
+            console.error("Error creating note:", err);
+            alert("Failed to create note.");
+        }
+    };
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'checker' && (
-          <div className="space-y-8">
-            {/* User Type Selection */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Select User Type</h2>
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => setUserType('normal')}
-                  className={`flex items-center space-x-3 px-6 py-4 rounded-lg border-2 transition-all ${
-                    userType === 'normal'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <FileText className="w-6 h-6" />
-                  <div className="text-left">
-                    <div className="font-medium">Normal User</div>
-                    <div className="text-sm text-gray-600">Upload single resume</div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setUserType('hr')}
-                  className={`flex items-center space-x-3 px-6 py-4 rounded-lg border-2 transition-all ${
-                    userType === 'hr'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Users className="w-6 h-6" />
-                  <div className="text-left">
-                    <div className="font-medium">HR User</div>
-                    <div className="text-sm text-gray-600">Upload ZIP batch files</div>
-                  </div>
-                </button>
-              </div>
-            </div>
+    const tabs = [
+        { id: "notes", label: "📝 Notes", icon: "📝" },
+        { id: "resume", label: "💼 Resume Helper", icon: "💼" },
+        { id: "news", label: "📰 Tech News", icon: "📰" },
+    ];
 
-            {/* File Upload */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Resumes</h2>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg font-medium text-gray-900 mb-2">
-                  {userType === 'hr' ? 'Upload ZIP file with multiple resumes' : 'Upload your resume'}
-                </p>
-                <p className="text-gray-600 mb-4">
-                  Supported formats: PDF, DOC, DOCX {userType === 'hr' && ', ZIP'}
-                </p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleFileUpload}
-                  accept={userType === 'hr' ? '.pdf,.doc,.docx,.zip' : '.pdf,.doc,.docx'}
-                  multiple={userType === 'hr'}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Choose Files
-                </button>
-              </div>
-            </div>
-
-            {/* Analysis Results */}
-            {isAnalyzing && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="text-lg text-gray-700">Analyzing resumes...</p>
-                </div>
-              </div>
-            )}
-
-            {analysisResults.length > 0 && !isAnalyzing && (
-              <div className="space-y-6">
-                {/* Summary */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900">Analysis Summary</h2>
-                    <button
-                      onClick={generateReport}
-                      className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>Generate Report</span>
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        <BarChart3 className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-800">Total Files</span>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-900">{analysisResults.length}</p>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="w-5 h-5 text-green-600" />
-                        <span className="text-sm font-medium text-green-800">Average Score</span>
-                      </div>
-                      <p className="text-2xl font-bold text-green-900">
-                        {Math.round(analysisResults.reduce((acc, result) => acc + result.totalScore, 0) / analysisResults.length)}%
-                      </p>
-                    </div>
-                    <div className="bg-purple-50 rounded-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="w-5 h-5 text-purple-600" />
-                        <span className="text-sm font-medium text-purple-800">Pass Rate</span>
-                      </div>
-                      <p className="text-2xl font-bold text-purple-900">
-                        {Math.round((analysisResults.filter(r => r.totalScore >= 70).length / analysisResults.length) * 100)}%
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Individual Results */}
-                {analysisResults.map((result, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{result.fileName}</h3>
-                        <p className="text-sm text-gray-600">{(result.fileSize / 1024).toFixed(1)} KB</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {getScoreIcon(result.totalScore)}
-                        <span className={`text-2xl font-bold ${getScoreColor(result.totalScore)}`}>
-                          {result.totalScore}%
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-3">Detailed Scores</h4>
-                        <div className="space-y-2">
-                          {result.scores.map((score, scoreIndex) => (
-                            <div key={scoreIndex} className="flex justify-between items-center">
-                              <span className="text-sm text-gray-700">{score.label}</span>
-                              <div className="flex items-center space-x-2">
-                                <div className="w-20 bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className={`h-2 rounded-full ${
-                                      score.score >= 85 ? 'bg-green-500' :
-                                      score.score >= 70 ? 'bg-yellow-500' : 'bg-red-500'
-                                    }`}
-                                    style={{ width: `${score.score}%` }}
-                                  ></div>
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+            {/* Navigation Header */}
+            <div className="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center py-6">
+                        <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    <span className="text-white font-bold text-lg">D</span>
                                 </div>
-                                <span className="text-sm font-medium text-gray-900">{score.score}%</span>
-                              </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                                        Dashboard
+                                    </h1>
+                                    <span className="text-sm text-gray-500 font-medium">Welcome back!</span>
+                                </div>
                             </div>
-                          ))}
                         </div>
-                      </div>
-
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-3">Improvement Suggestions</h4>
-                        <ul className="space-y-1">
-                          {result.suggestions.map((suggestion, suggestionIndex) => (
-                            <li key={suggestionIndex} className="flex items-center space-x-2 text-sm text-gray-700">
-                              <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                              <span>{suggestion}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'news' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Job Market News</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {jobNews.map((news, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className={`w-5 h-5 ${news.trend === 'up' ? 'text-green-500' : 'text-red-500'}`} />
-                      <span className="text-sm text-gray-600">{news.source}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-xs text-gray-500">
-                      <Clock className="w-3 h-3" />
-                      <span>{news.time}</span>
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{news.title}</h3>
-                  <p className="text-gray-700 mb-4">{news.summary}</p>
-                  <button className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm font-medium">
-                    <span>Read more</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'jobs' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Latest Job Openings</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {jobOpenings.map((job, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{job.title}</h3>
-                      <div className="flex items-center space-x-2 text-gray-600 mt-1">
-                        <Building className="w-4 h-4" />
-                        <span className="font-medium">{job.company}</span>
-                      </div>
-                    </div>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                      {job.source}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <MapPin className="w-4 h-4" />
-                      <span>{job.location}</span>
-                      <span>•</span>
-                      <span>{job.type}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <span className="font-medium text-green-600">{job.salary}</span>
-                      <span className="text-gray-500">•</span>
-                      <span className="text-gray-500">{job.posted}</span>
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-2">
-                      {job.skills.map((skill, skillIndex) => (
-                        <span
-                          key={skillIndex}
-                          className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded"
+                        <a
+                            href="/logout"
+                            className="group px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium"
                         >
-                          {skill}
-                        </span>
-                      ))}
+                            <span className="group-hover:animate-pulse">Logout</span>
+                        </a>
                     </div>
-                  </div>
-
-                  <div className="flex space-x-3">
-                    <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                      Apply Now
-                    </button>
-                    <button className="flex items-center justify-center p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Eye className="w-4 h-4 text-gray-600" />
-                    </button>
-                  </div>
                 </div>
-              ))}
             </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
-export default ResumePortal;
+            {/* Tab Navigation */}
+            <div className="bg-white/60 backdrop-blur-sm border-b border-white/30">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <nav className="flex space-x-8">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`relative py-4 px-1 font-medium text-sm transition-all duration-300 ${
+                                    activeTab === tab.id
+                                        ? "text-blue-600"
+                                        : "text-gray-500 hover:text-gray-700"
+                                }`}
+                            >
+                                <span className="mr-2 text-lg">{tab.icon}</span>
+                                {tab.label}
+                                {activeTab === tab.id && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                                )}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {activeTab === "notes" && (
+                    <div className="space-y-8">
+                        {/* Error Display */}
+                        {error && (
+                            <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-6 py-4 rounded-r-lg shadow-lg animate-pulse">
+                                <div className="flex items-center">
+                                    <span className="text-red-400 mr-2">⚠️</span>
+                                    {error}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Create Note Form */}
+                        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20 hover:shadow-2xl transition-all duration-300">
+                            <div className="flex items-center mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center mr-3">
+                                    <span className="text-white text-lg">✨</span>
+                                </div>
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                    Create a New Note
+                                </h2>
+                            </div>
+                            <form onSubmit={createNote} className="space-y-6">
+                                <div className="group">
+                                    <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Title:
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="title"
+                                        name="title"
+                                        required
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        value={title}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm hover:border-gray-300 group-hover:shadow-md"
+                                        placeholder="Enter note title..."
+                                    />
+                                </div>
+                                <div className="group">
+                                    <label htmlFor="content" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Content:
+                                    </label>
+                                    <textarea
+                                        id="content"
+                                        name="content"
+                                        required
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        rows="5"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm hover:border-gray-300 group-hover:shadow-md resize-none"
+                                        placeholder="Enter note content..."
+                                    ></textarea>
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-semibold"
+                                >
+                                    <span className="flex items-center justify-center">
+                                        <span className="mr-2">📝</span>
+                                        Create Note
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Notes List */}
+                        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
+                            <div className="flex items-center mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg flex items-center justify-center mr-3">
+                                    <span className="text-white text-lg">📚</span>
+                                </div>
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                    Your Notes
+                                </h2>
+                            </div>
+                            
+                            {loading ? (
+                                <div className="flex justify-center items-center py-16">
+                                    <div className="relative">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200"></div>
+                                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent absolute top-0 left-0"></div>
+                                    </div>
+                                    <span className="ml-4 text-gray-600 font-medium">Loading notes...</span>
+                                </div>
+                            ) : notes.length === 0 ? (
+                                <div className="text-center py-16">
+                                    <div className="w-20 h-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-3xl">📝</span>
+                                    </div>
+                                    <p className="text-gray-500 text-lg font-medium">No notes yet</p>
+                                    <p className="text-gray-400 text-sm mt-1">Create your first note above!</p>
+                                </div>
+                            ) : (
+                                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                    {notes.map((note, index) => (
+                                        <div
+                                            key={note.id}
+                                            className="transform transition-all duration-300 hover:scale-105"
+                                            style={{
+                                                animationDelay: `${index * 100}ms`,
+                                                animation: 'fadeInUp 0.5s ease-out forwards'
+                                            }}
+                                        >
+                                            <Note note={note} onDelete={deleteNote} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "resume" && (
+                    <div className="transform transition-all duration-500 animate-fadeIn">
+                        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
+                            <ResumeHelper />
+                        </div>
+                    </div>
+                )}
+                
+                {activeTab === "news" && (
+                    <div className="transform transition-all duration-500 animate-fadeIn">
+                        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
+                            <NewsDashboard />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <style jsx>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .animate-fadeIn {
+                    animation: fadeInUp 0.5s ease-out;
+                }
+            `}</style>
+        </div>
+    );
+}
+
+export default Home;

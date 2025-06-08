@@ -4,7 +4,7 @@ import api from "../api";
 import { REFRESH_TOKEN, ACCESS_TOKEN } from "../constants";
 import { useState, useEffect } from "react";
 
-function ProtectedRoute({ children }) { // FIXED: destructured children properly
+function ProtectedRoute({ children }) {
     const [isAuthorized, setIsAuthorized] = useState(null);
 
     useEffect(() => {
@@ -13,18 +13,23 @@ function ProtectedRoute({ children }) { // FIXED: destructured children properly
 
     const refreshToken = async () => {
         const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+        if (!refreshToken) {
+            setIsAuthorized(false);
+            return;
+        }
+        
         try {
             const res = await api.post("/api/token/refresh/", {
                 refresh: refreshToken,
             });
             if (res.status === 200) {
                 localStorage.setItem(ACCESS_TOKEN, res.data.access);
-                setIsAuthorized(true); // FIXED: Set authorized to true after successful refresh
+                setIsAuthorized(true);
             } else {
                 setIsAuthorized(false);
             }
         } catch (error) {
-            console.log(error);
+            console.log("Refresh token error:", error);
             setIsAuthorized(false);
         }
     };
@@ -35,12 +40,12 @@ function ProtectedRoute({ children }) { // FIXED: destructured children properly
             setIsAuthorized(false);
             return;
         }
-        
+
         try {
             const decoded = jwtDecode(token);
             const tokenExpiration = decoded.exp;
             const now = Date.now() / 1000;
-            
+
             if (tokenExpiration < now) {
                 await refreshToken();
             } else {
@@ -53,7 +58,14 @@ function ProtectedRoute({ children }) { // FIXED: destructured children properly
     };
 
     if (isAuthorized === null) {
-        return <div>Loading...</div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
     }
 
     return isAuthorized ? children : <Navigate to="/login" />;
