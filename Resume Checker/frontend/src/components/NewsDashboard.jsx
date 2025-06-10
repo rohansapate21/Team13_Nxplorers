@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import '../styles/NewsDashboard.css';
+import Navbar from './Navbar';
 
 const NewsDashboard = () => {
     const [articles, setArticles] = useState([]);
@@ -92,6 +93,7 @@ const NewsDashboard = () => {
 
     return (
         <div className="news-dashboard">
+            <Navbar />
             <div className="news-dashboard-container">
                 <div className="news-header">
                     <div className="header-content">

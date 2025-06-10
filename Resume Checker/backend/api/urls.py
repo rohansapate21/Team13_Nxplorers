@@ -4,7 +4,6 @@ from .resume_views import get_resume_advice
 from .news_views import get_tech_news, get_news_categories, get_category_news
 from api.views import CreateUserView
 from .views import (
-    NoteViewSet,
     ResumeConversationViewSet,
     SavedArticleViewSet,
     UserProfileViewSet,
@@ -12,12 +11,6 @@ from .views import (
 
 urlpatterns = [
     path('user/register/', CreateUserView.as_view(), name='register'),
-    path('notes/', NoteViewSet.as_view({'get': 'list', 'post': 'create'}), name='note-list'),
-    path('notes/<int:pk>/', NoteViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
-    }), name='note-detail'),
     path('conversations/', ResumeConversationViewSet.as_view({
         'get': 'list',
         'post': 'create'

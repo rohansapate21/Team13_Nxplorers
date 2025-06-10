@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import JobDescription, Resume, ResumeMatch, SuggestedJob
+from .models import Resume, ResumeMatch
+from api.models import Note
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
@@ -12,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'confirm_password', 'first_name', 'last_name')
+        fields = ['id', 'username', 'email', 'password', 'confirm_password', 'first_name', 'last_name']
         extra_kwargs = {
             'username': {'required': True},
             'email': {'required': True}
@@ -41,34 +42,21 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
-class JobDescriptionSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer(read_only=True)
-
-    class Meta:
-        model = JobDescription
-        fields = '__all__'
-
 class ResumeSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-
+    
     class Meta:
         model = Resume
-        fields = '__all__'
+        fields = ['id', 'user', 'file', 'uploaded_at', 'parsed_data']
+        read_only_fields = ['id', 'user', 'uploaded_at']
 
 class ResumeMatchSerializer(serializers.ModelSerializer):
     resume = ResumeSerializer(read_only=True)
-    job_description = JobDescriptionSerializer(read_only=True)
-
+    
     class Meta:
         model = ResumeMatch
-        fields = '__all__'
-
-class SuggestedJobSerializer(serializers.ModelSerializer):
-    resume = ResumeSerializer(read_only=True)
-
-    class Meta:
-        model = SuggestedJob
-        fields = '__all__'
+        fields = ['id', 'resume', 'match_score', 'skills_match', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
 class ResumeParseRequestSerializer(serializers.Serializer):
     resumes = serializers.ListField(
@@ -83,4 +71,12 @@ class ResumeParseRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "Either JD file or JD text must be provided"
             )
-        return data 
+        return data
+
+class NoteSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = Note
+        fields = ['id', 'user', 'content', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at'] 

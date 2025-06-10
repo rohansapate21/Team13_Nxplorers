@@ -65,44 +65,12 @@ const Register = () => {
     }
   };
 
-  const handleOAuthLogin = async (provider) => {
-    try {
-      window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/${provider}`;
-    } catch (err) {
-      setError(`Failed to login with ${provider}. Please try again.`);
-    }
-  };
-
   return (
     <div className="register-container">
       <div className="register-card">
         <div className="register-header">
           <h1>Create Account</h1>
           <p>Join us to start your career journey</p>
-        </div>
-
-        <div className="oauth-buttons">
-          <button 
-            className="oauth-btn google"
-            onClick={() => handleOAuthLogin('google')}
-          >
-            <img src="/google-icon.png" alt="Google" />
-            Continue with Google
-          </button>
-          <button 
-            className="oauth-btn github"
-            onClick={() => handleOAuthLogin('github')}
-          >
-            <img src="/github-icon.png" alt="GitHub" />
-            Continue with GitHub
-          </button>
-          <button 
-            className="oauth-btn linkedin"
-            onClick={() => handleOAuthLogin('linkedin')}
-          >
-            <img src="/linkedin-icon.png" alt="LinkedIn" />
-            Continue with LinkedIn
-          </button>
         </div>
 
         <div className="divider">

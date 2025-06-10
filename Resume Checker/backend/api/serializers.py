@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Note, ResumeConversation, SavedArticle, UserProfile
+from .models import ResumeConversation, SavedArticle, UserProfile
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,12 +15,6 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
-
-class NoteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Note
-        fields = ('id', 'title', 'content', 'created_at', 'updated_at')
-        read_only_fields = ('created_at', 'updated_at')
 
 class ResumeConversationSerializer(serializers.ModelSerializer):
     class Meta:

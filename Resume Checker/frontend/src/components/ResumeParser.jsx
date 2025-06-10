@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import api from '../api';
 import '../styles/ResumeParser.css';
 import config from '../config';
+import Navbar from './Navbar';
 
 const ResumeParser = () => {
   const [resumeFile, setResumeFile] = useState(null);
@@ -68,7 +69,11 @@ const ResumeParser = () => {
 
       // Prepare form data
       const formData = new FormData();
-      formData.append('resumes', resumeFile);
+      if (Array.isArray(resumeFile)) {
+        resumeFile.forEach(file => formData.append('resumes', file));
+      } else if (resumeFile) {
+        formData.append('resumes', resumeFile);
+      }
       formData.append('jd_text', jdText.trim());
 
       console.log('Submitting data:', {
@@ -116,6 +121,7 @@ const ResumeParser = () => {
 
   return (
     <div className="resume-parser">
+      <Navbar />
       <div className="resume-parser-container">
         <div className="header">
           <h2>📄 Resume & Job Description Matching</h2>

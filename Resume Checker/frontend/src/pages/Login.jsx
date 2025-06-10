@@ -75,15 +75,6 @@ const Login = () => {
     }
   };
 
-  const handleOAuthLogin = async (provider) => {
-    try {
-      console.log('OAuth URL:', `${process.env.REACT_APP_API_URL}/api/auth/${provider}`);
-      window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/${provider}`;
-    } catch (err) {
-      setError(`Failed to login with ${provider}. Please try again.`);
-    }
-  };
-
   // Test backend connection
   const testConnection = async () => {
     try {
@@ -111,30 +102,6 @@ const Login = () => {
           </button>
           <button type="button" onClick={() => console.log('Current config:', config)}>
             Log Config
-          </button>
-        </div>
-
-        <div className="oauth-buttons">
-          <button 
-            className="oauth-btn google"
-            onClick={() => handleOAuthLogin('google')}
-          >
-            <img src="/google-icon.png" alt="Google" />
-            Continue with Google
-          </button>
-          <button 
-            className="oauth-btn github"
-            onClick={() => handleOAuthLogin('github')}
-          >
-            <img src="/github-icon.png" alt="GitHub" />
-            Continue with GitHub
-          </button>
-          <button 
-            className="oauth-btn linkedin"
-            onClick={() => handleOAuthLogin('linkedin')}
-          >
-            <img src="/linkedin-icon.png" alt="LinkedIn" />
-            Continue with LinkedIn
           </button>
         </div>
 

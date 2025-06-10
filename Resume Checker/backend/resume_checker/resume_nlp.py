@@ -8,8 +8,13 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Add this before you use word_tokenize or any NLTK resource
+# Add all possible NLTK data paths
 nltk.data.path.append(os.path.expanduser('~/AppData/Roaming/nltk_data'))
+nltk.data.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../nltk_data'))
+nltk.data.path.append('/usr/share/nltk_data')
+nltk.data.path.append('/usr/local/share/nltk_data')
+nltk.data.path.append('/usr/lib/nltk_data')
+nltk.data.path.append('/usr/local/lib/nltk_data')
 
 # Ensure NLTK and spaCy resources are available
 try:
@@ -27,6 +32,8 @@ except OSError:
     from spacy.cli import download
     download('en_core_web_sm')
     nlp = spacy.load('en_core_web_sm')
+
+print("NLTK data paths:", nltk.data.path)
 
 def extract_text_from_docx(file_path):
     doc = docx.Document(file_path)
@@ -81,4 +88,42 @@ def analyze_resume_vs_jd(resume_file, jd_text):
         "resume_text": resume_text,
         "jd_text": jd_text,
     }
-    return report 
+    return report
+
+class ResumeParser:
+    def __init__(self):
+        self.nlp = spacy.load('en_core_web_sm')
+        self.stop_words = set(stopwords.words('english'))
+
+    def parse_resume(self, resume_file):
+        """Parse a resume file and extract relevant information."""
+        resume_text = extract_text_from_file(resume_file)
+        if not resume_text:
+            raise ValueError("Could not extract text from resume file")
+
+        # Extract basic information
+        doc = self.nlp(resume_text)
+        
+        # Extract skills
+        skills = extract_skills(resume_text)
+        
+        # Extract education (simple pattern matching)
+        education = []
+        education_keywords = ['bachelor', 'master', 'phd', 'degree', 'university', 'college']
+        for sent in doc.sents:
+            if any(keyword in sent.text.lower() for keyword in education_keywords):
+                education.append(sent.text.strip())
+        
+        # Extract experience (simple pattern matching)
+        experience = []
+        experience_keywords = ['experience', 'worked', 'job', 'position', 'role']
+        for sent in doc.sents:
+            if any(keyword in sent.text.lower() for keyword in experience_keywords):
+                experience.append(sent.text.strip())
+        
+        return {
+            'text': resume_text,
+            'skills': skills,
+            'education': education,
+            'experience': experience
+        } 

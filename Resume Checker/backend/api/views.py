@@ -3,9 +3,9 @@ from rest_framework import generics, status, viewsets, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from api.models import Note, ResumeConversation, SavedArticle, UserProfile
+from api.models import ResumeConversation, SavedArticle, UserProfile
 from .serializers import (
-    UserSerializer, NoteSerializer, ResumeConversationSerializer,
+    UserSerializer, ResumeConversationSerializer,
     SavedArticleSerializer, UserProfileSerializer, ResumeQuestionSerializer,
     ResumeAnalysisSerializer, NewsQuerySerializer, SaveArticleSerializer
 )
@@ -17,23 +17,6 @@ from rest_framework.views import APIView
 logger = logging.getLogger(__name__)
 
 # Existing views
-class NoteListCreate(generics.ListCreateAPIView):
-    serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Note.objects.filter(author=self.request.user)
-    
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-class NoteDelete(generics.DestroyAPIView):
-    serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Note.objects.filter(author=self.request.user)
-
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -248,16 +231,6 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         profile, created = UserProfile.objects.get_or_create(user=self.request.user)
         return profile
-
-class NoteViewSet(viewsets.ModelViewSet):
-    serializer_class = NoteSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Note.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 class ResumeConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ResumeConversationSerializer

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api';
+import Navbar from './Navbar';
 import '../styles/ResumeHelper.css';
 
 const ResumeHelper = () => {
@@ -48,6 +49,7 @@ const ResumeHelper = () => {
 
     return (
         <div className="resume-helper">
+            <Navbar />
             <div className="resume-helper-container">
                 <div className="resume-helper-header">
                     <div className="header-content">

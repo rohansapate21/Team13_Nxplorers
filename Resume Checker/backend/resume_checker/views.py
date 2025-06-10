@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status, generics, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -12,17 +12,18 @@ import PyPDF2
 import docx
 import json
 import re
-from .models import JobDescription, Resume, ResumeMatch, SuggestedJob
+from .models import Resume, ResumeMatch
+from api.models import Note
 from .serializers import (
     UserSerializer,
-    JobDescriptionSerializer,
     ResumeSerializer,
     ResumeMatchSerializer,
-    SuggestedJobSerializer,
-    ResumeParseRequestSerializer
+    ResumeParseRequestSerializer,
+    NoteSerializer
 )
 import logging
-from .resume_nlp import analyze_resume_vs_jd
+import nltk
+from .resume_nlp import ResumeParser
 
 logger = logging.getLogger(__name__)
 
@@ -80,97 +81,57 @@ class AuthViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-class ResumeParserViewSet(viewsets.ViewSet):
+class ResumeParserViewSet(viewsets.ModelViewSet):
+    serializer_class = ResumeSerializer
     permission_classes = [IsAuthenticated]
 
-    def extract_text_from_pdf(self, file):
-        text = ""
-        pdf_reader = PyPDF2.PdfReader(file)
-        for page in pdf_reader.pages:
-            text += page.extract_text()
-        return text
+    def get_queryset(self):
+        return Resume.objects.filter(user=self.request.user)
 
-    def extract_text_from_docx(self, file):
-        text = ""
-        doc = docx.Document(file)
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + "\n"
-        return text
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
-    def extract_text(self, file):
-        if file.name.endswith('.pdf'):
-            return self.extract_text_from_pdf(file)
-        elif file.name.endswith(('.doc', '.docx')):
-            return self.extract_text_from_docx(file)
-        return ""
-
-    def extract_skills(self, text):
-        # This is a simple implementation. You might want to use a more sophisticated
-        # approach like NLP or a predefined skills database
-        common_skills = [
-            'python', 'java', 'javascript', 'react', 'angular', 'vue',
-            'node.js', 'django', 'flask', 'spring', 'sql', 'nosql',
-            'mongodb', 'postgresql', 'aws', 'azure', 'docker', 'kubernetes',
-            'machine learning', 'ai', 'data science', 'devops', 'agile',
-            'scrum', 'git', 'ci/cd', 'rest api', 'graphql', 'microservices'
-        ]
-        
-        text = text.lower()
-        found_skills = []
-        for skill in common_skills:
-            if skill in text:
-                found_skills.append(skill)
-        return found_skills
-
-    def calculate_match_score(self, resume_skills, jd_skills):
-        if not resume_skills or not jd_skills:
-            return 0
-        
-        common_skills = set(resume_skills) & set(jd_skills)
-        match_score = (len(common_skills) / len(jd_skills)) * 100
-        return round(match_score, 2)
-
-    def create(self, request):
+    @action(detail=False, methods=['post'])
+    def parse(self, request):
         serializer = ResumeParseRequestSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            try:
+                parser = ResumeParser()
+                parsed_data = parser.parse_resume(serializer.validated_data['resume_file'])
+                
+                resume = Resume.objects.create(
+                    user=request.user,
+                    file=serializer.validated_data['resume_file'],
+                    parsed_data=parsed_data
+                )
+                
+                return Response(ResumeSerializer(resume).data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                logger.error(f"Error parsing resume: {str(e)}")
+                return Response(
+                    {'error': 'Failed to parse resume'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        resumes = request.FILES.getlist('resumes')
-        jd_file = request.FILES.get('jd')
-        jd_text = request.data.get('jd_text', '')
+class ResumeMatchViewSet(viewsets.ModelViewSet):
+    serializer_class = ResumeMatchSerializer
+    permission_classes = [IsAuthenticated]
 
-        # If JD file is provided and is .docx, extract text
-        if jd_file and jd_file.name.endswith('.docx'):
-            from .resume_nlp import extract_text_from_file
-            jd_text = extract_text_from_file(jd_file)
+    def get_queryset(self):
+        return ResumeMatch.objects.filter(resume__user=self.request.user)
 
-        results = []
-        for resume_file in resumes:
-            # Only process .docx resumes with NLP logic
-            if resume_file.name.endswith('.docx') and jd_text:
-                from .resume_nlp import analyze_resume_vs_jd
-                report = analyze_resume_vs_jd(resume_file, jd_text)
-                results.append({
-                    'filename': resume_file.name,
-                    'match_score': report['match_score'],
-                    'resume_skills': report['resume_skills'],
-                    'jd_skills': report['jd_skills'],
-                    'matched_skills': report['matched_skills'],
-                    'missing_skills': report['missing_skills'],
-                    'resume_text': report['resume_text'],
-                    'jd_text': report['jd_text'],
-                })
-            else:
-                # fallback to old logic for non-docx or missing JD
-                results.append({
-                    'filename': resume_file.name,
-                    'error': 'Only .docx resumes and JD text are supported for advanced matching.'
-                })
+class NoteViewSet(viewsets.ModelViewSet):
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated]
 
-        return Response({'results': results}, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return Note.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     @action(detail=False, methods=['get'])
-    def history(self, request):
-        resumes = Resume.objects.filter(user=request.user).order_by('-uploaded_at')
-        serializer = ResumeSerializer(resumes, many=True)
-        return Response(serializer.data) 
+    def count(self, request):
+        count = self.get_queryset().count()
+        return Response({'count': count}) 
