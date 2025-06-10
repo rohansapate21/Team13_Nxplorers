@@ -3,11 +3,33 @@ from . import views
 from .resume_views import get_resume_advice
 from .news_views import get_tech_news, get_news_categories, get_category_news
 from api.views import CreateUserView
+from .views import (
+    NoteViewSet,
+    ResumeConversationViewSet,
+    SavedArticleViewSet,
+    UserProfileViewSet,
+)
 
 urlpatterns = [
-    # Original note endpoints
-    path("notes/", views.NoteListCreate.as_view(), name="note-list"),
-    path("notes/delete/<int:pk>/", views.NoteDelete.as_view(), name="delete-note"),
+    path('user/register/', CreateUserView.as_view(), name='register'),
+    path('notes/', NoteViewSet.as_view({'get': 'list', 'post': 'create'}), name='note-list'),
+    path('notes/<int:pk>/', NoteViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'delete': 'destroy'
+    }), name='note-detail'),
+    path('conversations/', ResumeConversationViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='conversation-list'),
+    path('articles/', SavedArticleViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='article-list'),
+    path('profile/', UserProfileViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update'
+    }), name='profile'),
     
     # Resume helper endpoints
     path("resume/advice/", get_resume_advice, name="resume-advice"),

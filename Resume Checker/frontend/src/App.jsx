@@ -1,37 +1,31 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
-import ProtectedRoute from "./components/ProtectedRoutes";
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ProtectedRoute from './components/ProtectedRoutes';
+import './App.css';
 
-function Logout() {
-    localStorage.clear();
-    return <Navigate to="/login" />;
-}
+const Logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    return <Navigate to="/login" replace />;
+};
 
 function App() {
     return (
-        <BrowserRouter>
-            <div className="min-h-screen bg-gray-50">
-                <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <ProtectedRoute>
-                                <Home />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/logout" element={<Logout />} />
-                    <Route path="*" element={<NotFound />} />
-                </Routes>
-            </div>
-        </BrowserRouter>
+        <Router>
+            <Routes>
+                <Route path="/" element={
+                    <ProtectedRoute>
+                        <Home />
+                    </ProtectedRoute>
+                } />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </Router>
     );
 }
 

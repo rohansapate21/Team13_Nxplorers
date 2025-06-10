@@ -1,74 +1,37 @@
-import { Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import api from "../api";
-import { REFRESH_TOKEN, ACCESS_TOKEN } from "../constants";
-import { useState, useEffect } from "react";
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import axios from 'axios';
+import config from '../config';
 
-function ProtectedRoute({ children }) {
-    const [isAuthorized, setIsAuthorized] = useState(null);
+const ProtectedRoute = ({ children }) => {
+    const token = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
 
-    useEffect(() => {
-        auth().catch(() => setIsAuthorized(false));
-    }, []);
-
-    const refreshToken = async () => {
-        const refreshToken = localStorage.getItem(REFRESH_TOKEN);
-        if (!refreshToken) {
-            setIsAuthorized(false);
-            return;
-        }
-        
-        try {
-            const res = await api.post("/api/token/refresh/", {
-                refresh: refreshToken,
-            });
-            if (res.status === 200) {
-                localStorage.setItem(ACCESS_TOKEN, res.data.access);
-                setIsAuthorized(true);
-            } else {
-                setIsAuthorized(false);
-            }
-        } catch (error) {
-            console.log("Refresh token error:", error);
-            setIsAuthorized(false);
-        }
-    };
-
-    const auth = async () => {
-        const token = localStorage.getItem(ACCESS_TOKEN);
-        if (!token) {
-            setIsAuthorized(false);
-            return;
-        }
-
-        try {
-            const decoded = jwtDecode(token);
-            const tokenExpiration = decoded.exp;
-            const now = Date.now() / 1000;
-
-            if (tokenExpiration < now) {
-                await refreshToken();
-            } else {
-                setIsAuthorized(true);
-            }
-        } catch (error) {
-            console.log("Token decode error:", error);
-            setIsAuthorized(false);
-        }
-    };
-
-    if (isAuthorized === null) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading...</p>
-                </div>
-            </div>
-        );
+    if (!token) {
+        return <Navigate to="/login" replace />;
     }
 
-    return isAuthorized ? children : <Navigate to="/login" />;
-}
+    // Optionally, you can add token refresh logic here
+    const refreshAccessToken = async () => {
+        try {
+            const response = await axios.post(
+                `${config.API_BASE_URL}${config.API_ENDPOINTS.REFRESH_TOKEN}`,
+                { refresh: refreshToken }
+            );
+            if (response.data.access) {
+                localStorage.setItem('access_token', response.data.access);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+            }
+        } catch (error) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login';
+        }
+    };
+
+    // You can call refreshAccessToken() here if you want to auto-refresh
+
+    return children;
+};
 
 export default ProtectedRoute;

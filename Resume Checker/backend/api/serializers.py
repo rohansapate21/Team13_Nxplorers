@@ -5,38 +5,43 @@ from .models import Note, ResumeConversation, SavedArticle, UserProfile
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name']
+        fields = ('id', 'username', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        # Create user profile automatically
-        UserProfile.objects.create(user=user)
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password']
+        )
         return user
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = ['id', 'title', 'content', 'created_at', 'updated_at']
+        fields = ('id', 'title', 'content', 'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
 
 class ResumeConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResumeConversation
-        fields = ['id', 'question', 'response', 'created_at']
+        fields = ('id', 'title', 'messages', 'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
 
 class SavedArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = SavedArticle
-        fields = ['id', 'title', 'description', 'url', 'source', 'published_at', 'saved_at']
+        fields = ('id', 'title', 'url', 'summary', 'created_at')
+        read_only_fields = ('created_at',)
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.EmailField(source='user.email', read_only=True)
-    
+
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'email', 'career_field', 'experience_level', 
-                 'skills', 'resume_uploaded', 'created_at', 'updated_at']
+        fields = ('id', 'username', 'email', 'role', 'resume_file', 'created_at')
+        read_only_fields = ('created_at',)
 
 # Request/Response serializers for API endpoints
 class ResumeQuestionSerializer(serializers.Serializer):

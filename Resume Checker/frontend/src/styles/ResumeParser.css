@@ -1,0 +1,295 @@
+.resume-parser {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.resume-parser-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.resume-parser h2 {
+  color: #2d3748;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.role-info {
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 6px;
+  border-left: 4px solid #4299e1;
+}
+
+.file-upload-section,
+.jd-section {
+  margin-bottom: 1.5rem;
+}
+
+.file-upload-section label,
+.jd-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px dashed #cbd5e0;
+  border-radius: 6px;
+  background: #f7fafc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+input[type="file"]:hover {
+  border-color: #4299e1;
+  background: #ebf8ff;
+}
+
+.file-list {
+  margin-top: 1rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.file-item span {
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.remove-file {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+.remove-file:hover {
+  color: #c53030;
+}
+
+.jd-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.jd-text textarea {
+  width: 100%;
+  height: 150px;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.char-count {
+  text-align: right;
+  color: #718096;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.error {
+  color: #e53e3e;
+  background: #fff5f5;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #e53e3e;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  margin: 1rem 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4299e1, #667eea);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  right: 0;
+  top: -20px;
+  color: #4a5568;
+  font-size: 0.8rem;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(90deg, #4299e1, #667eea);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button[type="submit"]:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.result {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.result h3 {
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+}
+
+.result h3 span {
+  color: #4299e1;
+  font-weight: 600;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.result-section {
+  background: #f7fafc;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.result-section h4 {
+  color: #4a5568;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.result-section pre {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
+
+.skills-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.skill-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.skill-name {
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.skill-bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.skill-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4299e1, #667eea);
+  transition: width 0.3s ease;
+}
+
+.skill-score {
+  color: #4299e1;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.suggested-jobs {
+  display: grid;
+  gap: 1rem;
+}
+
+.job-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.job-card h5 {
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.job-card p {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.job-match {
+  color: #4299e1;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .resume-parser {
+    padding: 1rem;
+  }
+
+  .resume-parser-container {
+    padding: 1.5rem;
+  }
+
+  .jd-section {
+    grid-template-columns: 1fr;
+  }
+
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+} 

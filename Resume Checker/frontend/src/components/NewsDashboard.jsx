@@ -91,33 +91,28 @@ const NewsDashboard = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
-            <div className="bg-white rounded-lg shadow-lg">
-                <div className="border-b border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-3xl font-bold text-gray-900">📰 Latest Technical & Job-Oriented News</h2>
-                            <p className="text-gray-600 mt-2">Stay updated with the latest technology and career-related news from around the world.</p>
+        <div className="news-dashboard">
+            <div className="news-dashboard-container">
+                <div className="news-header">
+                    <div className="header-content">
+                        <div className="header-text">
+                            <h2>📰 Latest Technical & Job-Oriented News</h2>
+                            <p>Stay updated with the latest technology and career-related news from around the world.</p>
                         </div>
                         <button
                             onClick={refreshNews}
                             disabled={isLoading}
-                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
+                            className="refresh-button"
                         >
                             {isLoading ? 'Loading...' : 'Refresh'}
                         </button>
                     </div>
 
-                    {/* Category Filter */}
-                    <div className="mt-4">
-                        <div className="flex flex-wrap gap-2">
+                    <div className="category-filter">
+                        <div className="category-buttons">
                             <button
                                 onClick={() => setSelectedCategory('all')}
-                                className={`px-4 py-2 rounded-lg transition-colors ${
-                                    selectedCategory === 'all'
-                                        ? 'bg-blue-500 text-white'
-                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                }`}
+                                className={`category-button ${selectedCategory === 'all' ? 'active' : ''}`}
                             >
                                 All News
                             </button>
@@ -125,11 +120,7 @@ const NewsDashboard = () => {
                                 <button
                                     key={category.id}
                                     onClick={() => setSelectedCategory(category.id)}
-                                    className={`px-4 py-2 rounded-lg transition-colors ${
-                                        selectedCategory === category.id
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
+                                    className={`category-button ${selectedCategory === category.id ? 'active' : ''}`}
                                 >
                                     {category.name}
                                 </button>
@@ -138,56 +129,56 @@ const NewsDashboard = () => {
                     </div>
                 </div>
 
-                <div className="p-6">
+                <div className="news-content">
                     {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                        <div className="error-message">
                             {error}
                         </div>
                     )}
 
                     {isLoading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                        <div className="loading-container">
+                            <div className="loading-spinner"></div>
                         </div>
                     ) : articles.length === 0 ? (
-                        <div className="text-center text-gray-500 h-64 flex items-center justify-center">
+                        <div className="empty-state">
                             <div>
-                                <p className="text-lg">No news articles available at the moment.</p>
+                                <p>No news articles available at the moment.</p>
                                 <button
                                     onClick={refreshNews}
-                                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                    className="try-again-button"
                                 >
                                     Try Again
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="news-grid">
                             {articles.map((article, index) => (
-                                <div key={index} className="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div key={index} className="news-card">
                                     {article.urlToImage && (
                                         <img
                                             src={article.urlToImage}
                                             alt={article.title || 'News image'}
-                                            className="w-full h-48 object-cover rounded-lg mb-4"
+                                            className="news-image"
                                             onError={(e) => {
                                                 e.target.style.display = 'none';
                                             }}
                                         />
                                     )}
                                     
-                                    <div className="mb-2">
-                                        <span className="text-xs text-blue-600 font-medium">{article.source || 'Unknown'}</span>
-                                        <span className="text-xs text-gray-500 ml-2">
+                                    <div className="news-meta">
+                                        <span className="news-source">{article.source || 'Unknown'}</span>
+                                        <span className="news-date">
                                             {formatDate(article.publishedAt)}
                                         </span>
                                     </div>
                                     
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                                    <h3 className="news-title">
                                         {article.title || 'No title available'}
                                     </h3>
                                     
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                                    <p className="news-description">
                                         {article.description || 'No description available'}
                                     </p>
                                     
@@ -196,12 +187,9 @@ const NewsDashboard = () => {
                                             href={article.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                                            className="news-link"
                                         >
-                                            🔗 Read more
-                                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6L8 8l-2 2 2 2 2 2M14 6l2 2 2 2-2 2-2 2" />
-                                            </svg>
+                                            Read More
                                         </a>
                                     )}
                                 </div>
